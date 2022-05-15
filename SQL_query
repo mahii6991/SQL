@@ -1,0 +1,61 @@
+--here we have extracted the data from the tuples
+/*
+SELECT created_time,engaged_fans,post_clicks,reach,impressions
+FROM "PostInsights"
+ORDER BY created_time DESC; 
+*/
+
+--here we have arranged the attributes in the desecing order according to the column
+/*
+SELECT "CountryCode","NumberOfFans"
+FROM "FansPerCountry"
+WHERE "Date" = '2018-10-16'
+ORDER BY "NumberOfFans" DESC
+LIMIT 10;
+*/
+
+--so here we are removing the duplicate columns from the dataset called the GlobalPage
+/*
+SELECT DISTINCT date , new_likes  
+FROM "GlobalPage"
+ORDER BY new_likes DESC;
+*/
+
+--here we are going to perform the sorting and grouping query results
+--HERE we have calculated the percentage of the fans, and also used the round function in it, this is the type of providing multiple queries for the dataset
+/*
+SELECT gender, SUM(number_of_fans),
+ROUND(SUM (number_of_fans) * 100 / (SELECT SUM(number_of_fans) FROM "FansPerGenderAge" WHERE "date"='2018-10-16'),2)
+FROM "FansPerGenderAge"
+WHERE "date"='2018-10-16'
+GROUP BY gender;
+*/
+
+--now we will be performing the inner join which is the higher level in sql
+--SO HERE WE ARE PERFORMING THE JOIN ON THE DIFFERENT COLUMNS,as we can see both the column have the country code column common in them
+/*
+SELECT "PopStats"."country_name",
+(fpc."NumberOfFans" * 100.00 / "PopStats"."population") as penetration_ratio
+FROM "FansPerCountry" as fpc
+JOIN "PopStats" ON fpc."CountryCode" = "PopStats"."country_code"
+WHERE fpc."Date" = '2018-10-16'
+ORDER BY penetration_ratio DESC
+LIMIT 10;
+*/
+
+--we will going to perform the join statement agian on the fanspercountry and popstats tables
+--in this query we will going to be performing the outer join in the table
+SELECT "country_name" , "NumberOfFans"
+FROM "PopStats" as pop
+JOIN "FansPerCountry" as fpc
+ON pop."country_code" = fpc."Country_code"
+WHERE "Date" = (SELECT MAX("Date") FROM "FansPerCountry")
+AND population > 20000000
+ORDER BY "NumberOfFans"
+LIMIT 10;
+
+
+
+
+
+
