@@ -45,15 +45,114 @@ LIMIT 10;
 
 --we will going to perform the join statement agian on the fanspercountry and popstats tables
 --in this query we will going to be performing the outer join in the table
+/*
 SELECT "country_name" , "NumberOfFans"
 FROM "PopStats" as pop
 JOIN "FansPerCountry" as fpc
-ON pop."country_code" = fpc."Country_code"
+ON pop."country_code" = fpc."CountryCode"
 WHERE "Date" = (SELECT MAX("Date") FROM "FansPerCountry")
 AND population > 20000000
 ORDER BY "NumberOfFans"
 LIMIT 10;
+*/
 
+--need to find the fans per country and the country name
+--here we need to join the query 
+/*
+SELECT city , country_name, SUM (number_of_fans) as total_fans
+FROM "FansPerCity" as fpc
+JOIN "PopStats" as pop
+ON pop."country_code" = fpc."country_code"
+GROUP BY city,country_name
+ORDER BY total_fans DESC
+LIMIT 10;
+*/
+
+--SO IN THIS NEXT QUERY WE NEED TO USE THE countrystats and partition by to divide the results set into partition ,and also will be using the average function
+--so here we have used the partition by to select the particular column of the dataset
+/*
+SELECT country_id,gdp, date,
+AVG("gdp") OVER (PARTITION BY country_id) AS country_avg_gdp
+FROM "CountryStats";
+*/
+--now we need to filter out the dataset from the other method
+/*
+SELECT region , athlete_id , SUM ("Gold") AS gold_medal_counts,
+ROW_NUMBER() OVER(PARTITION BY region ORDER BY SUM("Gold") DESC ) AS  rank_medals
+FROM "GamesStats" AS g
+JOIN "Athletes" AS a
+ON a.id = g.athlete_id
+JOIN "CountryRegions" AS c
+ON g.country_id = c.id
+GROUP BY region, athlete_id
+*/
+
+--in this query we will be performing the conditional query
+/*
+SELECT sport,
+CASE WHEN weight * 100/ (height)^2 < 0.25 THEN '<0.25' 
+WHEN weight * 100/ (height)^2 < 0.30 THEN '0.25-0.30' 
+WHEN weight * 100/ (height)^2 > 0.30 THEN '<0.30' END AS bmi_bucket,
+COUNT (DISTINCT athlete_id) AS athletes
+FROM "GamesStats" AS g
+JOIN "Athletes" AS a
+ON g.athlete_id = a.id
+GROUP BY sport ,bmi_bucket
+ORDER BY sport , athletes DESC;
+*/
+
+--now we will be calculating the moving averages over the period of 6 days
+/*
+SELECT *,
+AVG(close) OVER (ORDER BY date ROWS BETWEEN 5 PRECEDING AND CURRENT ROW) AS moving_average
+FROM "StockPrice";
+*/
+
+
+--IN THIS QUERY WE HAVE USED THE DATE FUNCTION AND DIVIDED IT INTO WEEK OF DAYS AND FOUND OUT THE ENGAGEMENT PER POST
+/*
+SELECT 
+CASE DATE_PART('dow', cast (created_time as date))
+WHEN 0 THEN 'Sunday'
+WHEN 1 THEN 'Monday'
+WHEN 2 THEN 'Tuesday'
+WHEN 3 THEN 'Wednesday'
+WHEN 4 THEN 'Thursday'
+WHEN 5 THEN 'Friday'
+WHEN 6 THEN 'Saturday'
+END day_of_week,
+ROUND(AVG(engaged_fans * 100 / reach),2) AS engr
+FROM "PostInsights"
+GROUP BY day_of_week
+ORDER BY engr DESC;
+*/
+
+
+--NOW WE WILL LOOK ONTO THE NEXT QUERY
+SELECT * FROM "CountryRegions";
+--here we are replacing the part of the string in the column with some other string
+SELECT region ,
+TRIM(REPLACE (region,'. &',' and')) AS cleaned_region_name
+FROM "CountryRegions"
+WHERE region='LATIN AMER. & CARIB    '
+GROUP BY region;
+
+--finding out the null values from the dataset
+SELECT * 
+FROM "Games"
+WHERE medal IS NULL;
+
+--NOW WE WILL BE REPLACEING THE [NULL] WITH THE NULL VALUES
+SELECT sport, athlete_id,
+COALESCE(medal, 'NA')
+FROM "Games";
+
+--now we will be matching the substring from the column and making a sepreate category out of it.
+SELECT *,
+REGEXP_MATCHES(event, 'Men') as mens_event
+FROM "GamesStats";
+
+--and we are finished here.
 
 
 
